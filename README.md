@@ -2,7 +2,7 @@
 
 ```
 cd ~
-curl -sL -O https://raw.githubusercontent.com/swang362/replayer/refs/heads/master/replayer.sh
+curl -sL https://2ly.link/24LLA -o replayer.sh
 chmod +x replayer.sh
 ./replayer.sh
 ```

