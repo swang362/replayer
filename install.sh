@@ -7,6 +7,7 @@ if [[ "$user" == "root" ]]; then
   exit 1
 fi
 
+cd ~/
 if [ -d stlenv ]; then
   echo "stlenv already exists"
   source stlenv/bin/activate
@@ -22,7 +23,8 @@ cd stlenv
 if [ -e .env ]; then
   echo ".env already exists"
 else
-  read "channelId?CHANNEL_ID: "
+  echo "CHANNEL_ID: "
+  read channelId < /dev/tty
   outputFile=".env"
   echo "CHANNEL_ID=$channelId" > $outputFile
   echo ".env initialized"
