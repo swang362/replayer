@@ -7,6 +7,8 @@ if [[ "$user" == "root" ]]; then
   exit 1
 fi
 
+pyroot=$(realpath $(which python3)/../..)
+
 cd ~/
 if [ -d stlenv ]; then
   echo "stlenv already exists"
@@ -19,7 +21,6 @@ else
 fi
 
 cd stlenv
-
 if [ -e .env ]; then
   echo ".env already exists"
 else
@@ -38,7 +39,7 @@ if ! ls -l /dev/bpf* | grep -q "$user"; then
 fi
 
 # hide python dockbar icon
-plistPath="/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/Info.plist"
+plistPath="$pyroot/Resources/Python.app/Contents/Info.plist"
 if [ -e $plistPath ]; then
   if ! sudo plutil -extract LSUIElement xml1 -o - $plistPath | grep -q "<true/>"; then
     sudo plutil -insert LSUIElement -bool true $plistPath
