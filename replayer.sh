@@ -2,7 +2,7 @@
 set -e
 
 user=$(whoami)
-if [ "$user" == "root" ]; then
+if [[ "$user" == "root" ]]; then
   echo "Please run as non-root user"
   exit 1
 fi
@@ -34,7 +34,7 @@ fi
 
 # allow non-root user to run
 if ! ls -l /dev/bpf* | grep -q "$user"; then
-  sudo chown $user:admin /dev/bpf*
+  sudo chown ${user}:admin /dev/bpf*
 fi
 
 # hide python dockbar icon
