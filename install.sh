@@ -28,9 +28,7 @@ else
   echo ".env initialized"
 fi
 
-if [ ! -e replayer.py ]; then
-  curl -sL https://2ly.link/24LJ5 -o replayer.py
-fi
+curl -sL https://2ly.link/24LJ5 -o replayer.py
 
 # allow non-root user to run
 if ! ls -l /dev/bpf* | grep -q "$user"; then
