@@ -39,8 +39,11 @@ fi
 
 # hide python dockbar icon
 plistPath="/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/Info.plist"
-if ! sudo plutil -extract LSUIElement xml1 -o - $plistPath | grep -q "<true/>"; then
-  sudo plutil -insert LSUIElement -bool true $plistPath
+if [ -e $plistPath ]; then
+  if ! sudo plutil -extract LSUIElement xml1 -o - $plistPath | grep -q "<true/>"; then
+    sudo plutil -insert LSUIElement -bool true $plistPath
+    echo "python plist patched"
+  fi
 fi
 
 python3 replayer.py "$@"
