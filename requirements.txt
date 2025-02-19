@@ -1,0 +1,4 @@
+pynput
+python-dotenv
+scapy
+screeninfo
