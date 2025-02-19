@@ -1,9 +1,9 @@
 import os
 import time
 import logging
+from dotenv import load_dotenv
 from scapy.all import sniff, ARP
 
-from dotenv import load_dotenv
 load_dotenv()
 
 CHANNEL_ID = int(os.environ['CHANNEL_ID'])
@@ -12,6 +12,7 @@ last_event_id = None
 
 from pynput.keyboard import Controller as KeyboardController, Key, KeyCode
 from pynput.mouse import Controller as MouseController, Button
+
 keyboard = KeyboardController()
 mouse = MouseController()
 screen_width = 0
@@ -23,6 +24,7 @@ for m in get_monitors():
     screen_width = m.width
     screen_height = m.height
     break
+
 
 def two_bytes_to_signed_int(high_byte, low_byte):
     # Combine high and low bytes to form a 16-bit integer
@@ -42,7 +44,7 @@ def scale_coordinate(value, max_value):
   return (value + 32768) * max_value / 65535
 
 def get_pynput_key(key_code):
-    # Dictionary for extensive key mappings
+    win = (os.name == 'nt')
     key_mapping = {
         "KeyA": KeyCode.from_char('a'),
         "KeyB": KeyCode.from_char('b'),
@@ -70,33 +72,33 @@ def get_pynput_key(key_code):
         "KeyX": KeyCode.from_char('x'),
         "KeyY": KeyCode.from_char('y'),
         "KeyZ": KeyCode.from_char('z'),
-        "Digit1": KeyCode.from_char('1'),
-        "Digit2": KeyCode.from_char('2'),
-        "Digit3": KeyCode.from_char('3'),
-        "Digit4": KeyCode.from_char('4'),
-        "Digit5": KeyCode.from_char('5'),
-        "Digit6": KeyCode.from_char('6'),
-        "Digit7": KeyCode.from_char('7'),
-        "Digit8": KeyCode.from_char('8'),
-        "Digit9": KeyCode.from_char('9'),
-        "Digit0": KeyCode.from_char('0'),
+        "Digit1": KeyCode.from_char('1') if win else KeyCode(vk=18),
+        "Digit2": KeyCode.from_char('2') if win else KeyCode(vk=19),
+        "Digit3": KeyCode.from_char('3') if win else KeyCode(vk=20),
+        "Digit4": KeyCode.from_char('4') if win else KeyCode(vk=21),
+        "Digit5": KeyCode.from_char('5') if win else KeyCode(vk=23),
+        "Digit6": KeyCode.from_char('6') if win else KeyCode(vk=22),
+        "Digit7": KeyCode.from_char('7') if win else KeyCode(vk=26),
+        "Digit8": KeyCode.from_char('8') if win else KeyCode(vk=28),
+        "Digit9": KeyCode.from_char('9') if win else KeyCode(vk=25),
+        "Digit0": KeyCode.from_char('0') if win else KeyCode(vk=29),
         "Enter": Key.enter,
         "Escape": Key.esc,
         "Backspace": Key.backspace,
         "Tab": Key.tab,
         "Space": Key.space,
-        "Minus": KeyCode.from_char('-'),
-        "Equal": KeyCode.from_char('='),
-        "BracketLeft": KeyCode.from_char('['),
-        "BracketRight": KeyCode.from_char(']'),
-        "Backslash": KeyCode.from_char('\\'),
-        "Semicolon": KeyCode.from_char(';'),
-        "Quote": KeyCode.from_char('\''),
-        "Backquote": KeyCode.from_char('`'),
-        "Comma": KeyCode.from_char(','),
-        "Period": KeyCode.from_char('.'),
-        "Slash": KeyCode.from_char('/'),
-        "CapsLock": Key.caps_lock,
+        "Minus": KeyCode.from_char('-') if win else KeyCode(vk=27),
+        "Equal": KeyCode.from_char('=') if win else KeyCode(vk=24),
+        "BracketLeft": KeyCode.from_char('[') if win else KeyCode(vk=33),
+        "BracketRight": KeyCode.from_char(']') if win else KeyCode(vk=20),
+        "Backslash": KeyCode.from_char('\\') if win else KeyCode(vk=42),
+        "Semicolon": KeyCode.from_char(';') if win else KeyCode(vk=41),
+        "Quote": KeyCode.from_char('\'') if win else KeyCode(vk=39),
+        "Backquote": KeyCode.from_char('`') if win else KeyCode(vk=50),
+        "Comma": KeyCode.from_char(',') if win else KeyCode(vk=43),
+        "Period": KeyCode.from_char('.') if win else KeyCode(vk=47),
+        "Slash": KeyCode.from_char('/') if win else KeyCode(vk=44),
+        "CapsLock": Key.caps_lock if win else KeyCode(vk=57),
         "F1": Key.f1,
         "F2": Key.f2,
         "F3": Key.f3,
@@ -109,10 +111,10 @@ def get_pynput_key(key_code):
         "F10": Key.f10,
         "F11": Key.f11,
         "F12": Key.f12,
-        "PrintScreen": Key.print_screen,
-        "ScrollLock": Key.scroll_lock,
-        "Pause": Key.pause,
-        "Insert": Key.insert,
+        "PrintScreen": Key.print_screen if win else None,
+        "ScrollLock": Key.scroll_lock if win else None,
+        "Pause": Key.pause if win else None,
+        "Insert": Key.insert if win else None,
         "Home": Key.home,
         "PageUp": Key.page_up,
         "Delete": Key.delete,
@@ -197,6 +199,8 @@ def decode_hid_event(data):
 def replay_event(event):
   if event['type'] == 'key':
     key = get_pynput_key(event['key'])
+    if key is None:
+      return
     if event['state']:
       keyboard.press(key)
     else:
