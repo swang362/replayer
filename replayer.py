@@ -17,6 +17,7 @@ keyboard = KeyboardController()
 mouse = MouseController()
 screen_width = 0
 screen_height = 0
+is_win = (os.name == 'nt')
 
 from screeninfo import get_monitors
 for m in get_monitors():
@@ -44,7 +45,6 @@ def scale_coordinate(value, max_value):
   return (value + 32768) * max_value / 65535
 
 def get_pynput_key(key_code):
-    win = (os.name == 'nt')
     key_mapping = {
         "KeyA": KeyCode.from_char('a'),
         "KeyB": KeyCode.from_char('b'),
@@ -72,33 +72,33 @@ def get_pynput_key(key_code):
         "KeyX": KeyCode.from_char('x'),
         "KeyY": KeyCode.from_char('y'),
         "KeyZ": KeyCode.from_char('z'),
-        "Digit1": KeyCode.from_char('1') if win else KeyCode(vk=18),
-        "Digit2": KeyCode.from_char('2') if win else KeyCode(vk=19),
-        "Digit3": KeyCode.from_char('3') if win else KeyCode(vk=20),
-        "Digit4": KeyCode.from_char('4') if win else KeyCode(vk=21),
-        "Digit5": KeyCode.from_char('5') if win else KeyCode(vk=23),
-        "Digit6": KeyCode.from_char('6') if win else KeyCode(vk=22),
-        "Digit7": KeyCode.from_char('7') if win else KeyCode(vk=26),
-        "Digit8": KeyCode.from_char('8') if win else KeyCode(vk=28),
-        "Digit9": KeyCode.from_char('9') if win else KeyCode(vk=25),
-        "Digit0": KeyCode.from_char('0') if win else KeyCode(vk=29),
+        "Digit1": KeyCode.from_char('1') if is_win else KeyCode(vk=18),
+        "Digit2": KeyCode.from_char('2') if is_win else KeyCode(vk=19),
+        "Digit3": KeyCode.from_char('3') if is_win else KeyCode(vk=20),
+        "Digit4": KeyCode.from_char('4') if is_win else KeyCode(vk=21),
+        "Digit5": KeyCode.from_char('5') if is_win else KeyCode(vk=23),
+        "Digit6": KeyCode.from_char('6') if is_win else KeyCode(vk=22),
+        "Digit7": KeyCode.from_char('7') if is_win else KeyCode(vk=26),
+        "Digit8": KeyCode.from_char('8') if is_win else KeyCode(vk=28),
+        "Digit9": KeyCode.from_char('9') if is_win else KeyCode(vk=25),
+        "Digit0": KeyCode.from_char('0') if is_win else KeyCode(vk=29),
         "Enter": Key.enter,
         "Escape": Key.esc,
         "Backspace": Key.backspace,
         "Tab": Key.tab,
         "Space": Key.space,
-        "Minus": KeyCode.from_char('-') if win else KeyCode(vk=27),
-        "Equal": KeyCode.from_char('=') if win else KeyCode(vk=24),
-        "BracketLeft": KeyCode.from_char('[') if win else KeyCode(vk=33),
-        "BracketRight": KeyCode.from_char(']') if win else KeyCode(vk=20),
-        "Backslash": KeyCode.from_char('\\') if win else KeyCode(vk=42),
-        "Semicolon": KeyCode.from_char(';') if win else KeyCode(vk=41),
-        "Quote": KeyCode.from_char('\'') if win else KeyCode(vk=39),
-        "Backquote": KeyCode.from_char('`') if win else KeyCode(vk=50),
-        "Comma": KeyCode.from_char(',') if win else KeyCode(vk=43),
-        "Period": KeyCode.from_char('.') if win else KeyCode(vk=47),
-        "Slash": KeyCode.from_char('/') if win else KeyCode(vk=44),
-        "CapsLock": Key.caps_lock if win else KeyCode(vk=57),
+        "Minus": KeyCode.from_char('-') if is_win else KeyCode(vk=27),
+        "Equal": KeyCode.from_char('=') if is_win else KeyCode(vk=24),
+        "BracketLeft": KeyCode.from_char('[') if is_win else KeyCode(vk=33),
+        "BracketRight": KeyCode.from_char(']') if is_win else KeyCode(vk=20),
+        "Backslash": KeyCode.from_char('\\') if is_win else KeyCode(vk=42),
+        "Semicolon": KeyCode.from_char(';') if is_win else KeyCode(vk=41),
+        "Quote": KeyCode.from_char('\'') if is_win else KeyCode(vk=39),
+        "Backquote": KeyCode.from_char('`') if is_win else KeyCode(vk=50),
+        "Comma": KeyCode.from_char(',') if is_win else KeyCode(vk=43),
+        "Period": KeyCode.from_char('.') if is_win else KeyCode(vk=47),
+        "Slash": KeyCode.from_char('/') if is_win else KeyCode(vk=44),
+        "CapsLock": Key.caps_lock if is_win else KeyCode(vk=57),
         "F1": Key.f1,
         "F2": Key.f2,
         "F3": Key.f3,
@@ -111,10 +111,10 @@ def get_pynput_key(key_code):
         "F10": Key.f10,
         "F11": Key.f11,
         "F12": Key.f12,
-        "PrintScreen": Key.print_screen if win else None,
-        "ScrollLock": Key.scroll_lock if win else None,
-        "Pause": Key.pause if win else None,
-        "Insert": Key.insert if win else None,
+        "PrintScreen": Key.print_screen if is_win else None,
+        "ScrollLock": Key.scroll_lock if is_win else None,
+        "Pause": Key.pause if is_win else None,
+        "Insert": Key.insert if is_win else None,
         "Home": Key.home,
         "PageUp": Key.page_up,
         "Delete": Key.delete,
@@ -196,7 +196,9 @@ def decode_hid_event(data):
 
     return event
 
+click_count = 0
 def replay_event(event):
+  global click_count
   if event['type'] == 'key':
     key = get_pynput_key(event['key'])
     if key is None:
@@ -205,6 +207,7 @@ def replay_event(event):
       keyboard.press(key)
     else:
       keyboard.release(key)
+    click_count = 0
   
   elif event['type'] == 'mouse_button':
     button = None
@@ -218,6 +221,14 @@ def replay_event(event):
       return
         
     if event['state']:
+      if not is_win and button == Button.left:
+        click_count += 1
+        if click_count == 2:
+          click_count = 0
+          mouse.click(button)
+          return
+      else:
+        click_count = 0
       mouse.press(button)
     else:
       mouse.release(button)
@@ -226,6 +237,7 @@ def replay_event(event):
     pixel_x = int(scale_coordinate(event['to']['x'], screen_width))
     pixel_y = int(scale_coordinate(event['to']['y'], screen_height))
     mouse.position = (pixel_x, pixel_y)
+    click_count = 0
 
   # elif event['type'] == 'mouse_relative':
   #     for delta in event['delta']:
@@ -234,6 +246,7 @@ def replay_event(event):
   elif event['type'] == 'mouse_wheel':
     # The actual library method is `scroll`; this might differ slightly
     mouse.scroll(event['delta']['x'], event['delta']['y'])
+    click_count = 0
 
 def process_message(message):
     # print(message)
