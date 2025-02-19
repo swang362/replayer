@@ -2,12 +2,12 @@
 set -e
 
 user=$(whoami)
-if "$user" == "root"; then
+if [ "$user" == "root" ]; then
   echo "Please run as non-root user"
   exit 1
 fi
 
-if -d stlenv; then
+if [ -d stlenv ]; then
   echo "stlenv already exists"
   source stlenv/bin/activate
 else
@@ -19,7 +19,7 @@ fi
 
 cd stlenv
 
-if -e .env; then
+if [ -e .env ]; then
   echo ".env already exists"
 else
   read "channelId?CHANNEL_ID: "
@@ -28,7 +28,7 @@ else
   echo ".env initialized"
 fi
 
-if ! -e replayer.py; then
+if [ ! -e replayer.py ]; then
   curl -O https://raw.githubusercontent.com/swang362/replayer/refs/heads/master/replayer.py
 fi
 
